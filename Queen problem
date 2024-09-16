@@ -1,0 +1,215 @@
+//3. 利用栈操作实现八皇后问题求解。
+#include<iostream>
+#include<stdlib.h>
+#include<math.h>
+using namespace std;
+#define Over 0
+#define Error 0
+#define Ok 1
+#define Status int 
+#define StackSize 256								//初次分配空间量 
+#define StackCreat 128								//空间增加量 
+
+typedef struct
+{
+	int row;		//行
+	int col;		//列 
+}Point;
+typedef Point ElemType; 
+typedef struct
+{
+	ElemType *pBase;
+	ElemType *pTop;
+	int stacksize;
+}SeqStack;
+
+//1.顺序栈初始化
+Status InitStack(SeqStack &S)
+{
+	S.pBase = (ElemType *)malloc(StackSize*sizeof(ElemType));
+	if(S.pBase == NULL) exit(Over);
+	S.pTop = S.pBase;
+	S.stacksize = StackSize;
+	return Ok;
+}
+//2.顺序栈的销毁
+Status DestroyStack(SeqStack &S)
+{
+	if(S.pBase!=NULL)								//判断是否为空栈
+	{
+		free(S.pBase);
+		S.pBase=NULL;	
+	} 
+	S.pTop=NULL;
+	S.stacksize=0;
+	return Ok;
+}
+//3.顺序栈清空
+Status ClearStack(SeqStack &S)
+{
+	S.pTop = S.pBase;
+	return Ok;
+} 
+//4.访问顺序栈栈顶元素
+Status GetTop(SeqStack S,ElemType &e)
+{
+	if(S.pTop==S.pBase) return Error;				//空栈 
+	e = *(S.pTop-1);
+	return Ok;
+} 
+//5.顺序栈压栈操作
+Status Push(SeqStack &S,ElemType e)
+{
+	if(S.pTop-S.pBase >=S.stacksize) 				//栈满需增加空间
+	{
+		S.pBase = (ElemType*)realloc(S.pBase,(S.stacksize+StackCreat)*sizeof(ElemType));
+		if(S.pBase == NULL)	exit(Over);				//内存申请失败
+		S.pTop=S.pBase+S.stacksize;					//计算栈顶指针
+		S.stacksize += StackCreat; 
+	} 
+	*S.pTop = e;
+	S.pTop++;
+} 
+//6.判断栈是否为空
+Status StackEmpty(SeqStack S)
+{
+	if(S.pTop==S.pBase)	return Ok;
+	return Over;
+ } 
+//7.返回栈中元素个数
+Status StackLength(SeqStack S) 
+ {
+ 	if(S.pTop==S.pBase) return Error;				//空栈 
+ 	ElemType *p=S.pTop;
+ 	int n=0;
+ 	while(p!=S.pBase)
+ 	{
+ 		p--;
+ 		n++;
+	 }
+	 return n;
+ }
+ //8.顺序栈弹栈
+ //并用e返回弹出元素 
+ Status Pop(SeqStack &S,ElemType &e)
+ {
+ 	if(S.pTop == S.pBase) return Error;
+ 	e = *(S.pTop-1);
+ 	S.pTop--;
+	return Ok; 
+  } 
+/*9.从栈底到栈顶依次访问并输出栈中元素
+Status PrintOut(SeqStack S)
+{
+	if(S.pTop==S.pBase) return 	Error;				//空栈
+	ElemType *p;
+	p==S.pBase;
+	cout<<"栈底||  "; 
+	while(p!=S.pTop)
+	{
+		cout<<*p<<" ";
+		p++;
+	}
+	cout<<"  ||栈顶"<<endl;
+	return Ok;
+ } */
+
+//判断是否冲突 
+Status Judge(Point newQueen,SeqStack StkQueen)
+{
+	int x1,y1,x2,y2;
+    ElemType  *pCurQueen;
+	int flag0=1;
+    x1  = newQueen.col;
+    y1  = newQueen.row;
+    pCurQueen = StkQueen.pBase;
+    while( pCurQueen < StkQueen.pTop )
+    {
+        x2 = pCurQueen->col;
+        y2 = pCurQueen->row;
+        if ( x1==x2 ) { flag0 = 0; break; }                   
+        if ( abs(x1-x2) == (y1-y2) )  { flag0 = 0; break; }  
+        pCurQueen++;
+    } 
+    return flag0; 
+}
+Status OutputResult(SeqStack StkQueen,int N)
+{
+	Point *pCurQueen;
+    int   j;
+    for(pCurQueen = StkQueen.pBase; pCurQueen<StkQueen.pTop; pCurQueen++)
+    {
+        for( j=1; j<=N; j++ )
+        {
+            if( j!=pCurQueen->col )  cout<<"- ";
+            else  cout<<"Q ";
+        }
+        cout<<endl;
+    }
+    cout<<endl;
+    return Ok; 
+}
+Status PlaceQueen(int N)
+{
+	
+	SeqStack StkQueen;
+ 	Point curQueen;
+ 	int flag;
+ 	
+ 	InitStack(StkQueen);//创建空栈
+ 	int resultcount=0;//计数 
+ 	curQueen.col=1;//列 
+ 	curQueen.row=1;//行
+	Push(StkQueen,curQueen);//第一个皇后压栈
+	
+	curQueen.row=2;
+	curQueen.col=1;
+	while(curQueen.row <=N && curQueen.col <=N)
+	{
+		while(curQueen.col <=N)
+		{
+			flag=Judge(curQueen,StkQueen);//检查是否冲突 
+			if(flag)break;
+			curQueen.col++;
+		}
+		if(flag)//直到不冲突 
+		{
+			Push(StkQueen,curQueen);		//压栈 
+			curQueen.row ++;
+			curQueen.col=1;					//下一行第一列 
+			if(curQueen.row>N)				//本轮全部放置完毕 
+			{
+				cout<<"No."<<resultcount<<":"<<endl;
+				OutputResult(StkQueen,N);
+				resultcount++;
+				Pop(StkQueen,curQueen);		//弹栈，修改最后一个皇后的位置 
+				curQueen.col++;
+				while(curQueen.col>N&&StackEmpty(StkQueen)!=Ok) //不满足要求时回退
+				{
+					Pop(StkQueen,curQueen);
+					curQueen.col++;
+				} 
+			}
+		}
+		else//本行未找到合适位置   回退 
+		{
+			Pop(StkQueen, curQueen);
+            curQueen.col = curQueen.col + 1;
+            while ( curQueen.col > N && StackEmpty(StkQueen)!=Ok )   
+            {
+                Pop(StkQueen, curQueen);
+                curQueen.col++;
+            }
+		}
+	}
+	cout<<resultcount<<endl;
+	DestroyStack(StkQueen);
+    return Ok; 
+ 	
+}
+int main()
+ {
+ 	int n;
+ 	cin>>n;
+ 	PlaceQueen(n);
+}

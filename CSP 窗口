@@ -1,0 +1,57 @@
+/*输入的第一行有两个正整数,即 N 和 M。(1 ≤ N ≤ 10,1 ≤ M ≤ 10)
+接下来 N 行按照从最下层到最顶层的顺序给出 N 个窗口的位置。
+每行包含四个非负整数 x1, y1, x2, y2,表示该窗口的一对顶点坐标分别为 (x1, y1) 和 (x2, y2)。保证 x1<x2, y1<y2。*/
+
+#include<iostream>//每个结构体变量为一个窗口 
+#include<algorithm>
+using namespace std;
+const int Max=3000;
+int n,m,x,y;
+struct node
+{
+	int x1,y1,x2,y2;
+	int f;
+	int s;
+}a[Max];
+bool cmd(const node &a,const node &b)
+{
+	return a.f>b.f;
+}
+int main()
+{
+	cin>>n>>m;
+	for(int i=1;i<=n;i++)//f越大，越靠上 
+	{
+		cin>>a[i].x1>>a[i].y1>>a[i].x2>>a[i].y2;
+		a[i].f=i;
+		a[i].s=i;
+	}
+	int x[Max]={0},y[Max]={0};
+	for(int i=1;i<=m;i++)
+	{
+		cin>>x[i]>>y[i];
+	}
+	for(int i=1;i<=m;i++)
+	{
+		bool flag=0;
+		sort(a+1,a+n+1,cmd);
+		//cin>>x>>y;
+		for(int j=1;j<=n;j++)
+		{
+			if(x[i]>=a[j].x1 && x[i]<=a[j].x2 && y[i]>=a[j].y1 && y[i]<=a[j].y2)
+			{
+				cout<<a[j].s<<endl;
+				a[j].f=n;
+				for(int k=1;k<=n;k++)
+					if(k==j)
+						continue;
+					else
+						a[k].f--;
+				flag=1;
+				break;
+			}
+		}
+		if(!flag)
+		cout<<"IGNORED"<<endl;
+	}
+}

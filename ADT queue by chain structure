@@ -1,0 +1,160 @@
+//2．编程实现书P48 ADT Queue 基本操作9个，用链式存储结构实现；
+#include<iostream>
+#include<stdlib.h>
+using namespace std;
+
+#define Over 0
+#define Error 0
+#define Ok 1
+#define QueueSize 256
+typedef int ElemType;
+typedef int Status; 
+typedef struct Lnode
+{
+	ElemType	data;
+	struct Lnode *next;
+}Lnode,*QueuePtr;
+typedef struct LinkQueue
+{
+	QueuePtr front;			//队头指针
+	QueuePtr rear;			//队尾指针 
+}LinkQueue;
+
+//1.初始化链式队列
+Status InitQuenue(LinkQueue &Q)
+{
+	Q.front = Q.rear = (QueuePtr)malloc(sizeof(QueuePtr)) ;				//申请头结点
+	if(Q.front==NULL ||Q.rear==NULL) exit(Error);						//申请失败
+	Q.front->next =NULL;
+	Q.rear->next =NULL;
+	cout<<"创建成功"<<endl;
+	return Ok; 
+}
+//2.销毁链式队列
+Status DestroyQueue(LinkQueue &Q) 
+{
+	free(Q.front);
+	free(Q.rear);
+	return Ok;
+}
+//3.清除队列 
+Status ClearQueue(LinkQueue &Q)
+{
+	Lnode *p=Q.front->next;
+	while(p)
+	{
+		Q.front->next=p->next;
+		if(Q.rear == p)
+			Q.rear = Q.front;
+		free(p);
+		p=Q.front->next;
+	}
+
+	return Ok;
+}
+//4.队列是否为空队列
+Status EmptyQueue(LinkQueue &Q)
+{
+	if(Q.front == Q.rear)
+	return Ok;
+	else return Error; 
+ } 
+//5.返回h队列中元素个数
+Status QueueLength(LinkQueue Q)
+{
+	int n=0;
+	Lnode *t=Q.front->next;
+	while(t)
+	{
+		t=t->next;
+		n++;
+	}
+	return n;
+}
+//6.返回队头元素
+Status GetHead(LinkQueue &Q,ElemType &e)
+{
+	if(Q.front == Q.rear)
+	return Error;
+	e=Q.front->next->data;
+	return Ok;
+ } 
+//7.从队头到队尾输出队列
+Status TraverseQueue(LinkQueue &Q)
+{
+	if(Q.front == Q.rear)
+	{
+		cout<<"空队列"<<endl; 
+		return Error;
+	}
+	
+	Lnode *t=Q.front->next;
+	cout<<"||队头||  ";
+	while(t)
+	{
+		cout<<t->data<<" ";
+		t=t->next;
+	}
+	cout<<"  ||队尾||"<<endl;
+	return Ok;
+ } 
+//链式队列入列
+Status EnQueue(LinkQueue &Q,ElemType e)
+{
+	Lnode* S = (Lnode*)malloc(sizeof(Lnode));
+	if(S==NULL) exit(Over);						//内存申请失败
+	S->data = e;
+	S->next =NULL;
+	Q.rear->next =S;
+	Q.rear =S;
+	return Ok; 
+ } 
+//链式队列出列，用e返回队头元素 
+Status DeQueue(LinkQueue Q,ElemType &e) 
+{
+	if(Q.front == Q.rear) return Error;
+	Lnode *p = (Lnode *)malloc(sizeof(Lnode));
+	if(p==NULL) exit(Over);						//内存申请失败
+	p=Q.front->next;
+	e=p->data;
+	Q.front->next = p->next;
+	if(Q.rear == p) Q.rear=Q.front;				//防止丢失rear
+	return Ok;
+}
+int main()
+ {
+ 	LinkQueue Q;
+ 	int e;
+ 	InitQuenue(Q);//创建空队列 
+	cout<<"请输入一个入队元素（-1表示结束）："<<endl;
+	cin>>e;
+	while(e!=-1)
+	{
+		EnQueue(Q,e);
+		cout<<"请输入一个入队元素（-1表示结束）："<<endl;
+		cin>>e;
+	 } 
+	cout<<endl;
+	cout<<"栈元素个数为："<<QueueLength(Q)<<endl;
+	cout<<"从栈底输出："<<endl; 
+	TraverseQueue(Q);										//从队尾头输出 
+	DeQueue(Q,e); 											//队头出队 
+	cout<<"|弹出栈顶元素后|"<<endl; 
+	cout<<"栈元素个数为："<<QueueLength(Q)<<endl;
+												//获取队头元素 
+	if(Q.front==Q.rear)
+	{
+		GetHead(Q,e);
+		cout<<"访问栈顶元素："<<e<<endl;
+	}
+	else
+	{
+		cout<<"空栈，无栈顶元素"<<endl; 
+		ClearQueue(Q);
+		cout<<"|清空栈|"<<endl;
+		cout<<"栈元素个数为："<<QueueLength(Q)<<endl;
+	}
+	DestroyQueue(Q);
+	cout<<"|销毁栈|"<<endl;
+	return 0;
+ }
